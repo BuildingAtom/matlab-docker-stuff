@@ -1,0 +1,28 @@
+# Base MATLAB image, extended from the matlab-ref-arch group
+FROM ubuntu:22.04
+
+ARG MATLAB_RELEASE=r2022b
+ENV DEBIAN_FROTNEND="noninteractive" TZ="Etc/UTC"
+
+# Install the apt dependencies
+COPY apt-dependencies.txt /tmp/apt-dependencies.txt
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y `grep -ve \# apt-dependencies.txt | xargs` \
+    && apt-get clean \
+    && apt-get -y autoremove \
+    && rm -rf /var/lib/apt/lists/*
+    $$ rm -rf /tmp/apt-dependencies.txt
+
+# Run mpm to install MATLAB in the target location and delete the mpm installation afterwards.
+# If mpm fails to install successfully then output the logfile to the terminal, otherwise cleanup.
+RUN wget -q https://www.mathworks.com/mpm/glnxa64/mpm \
+    && chmod +x mpm \
+    && ./mpm install \
+    --release=${MATLAB_RELEASE} \
+    --destination=/opt/matlab \
+    --products MATLAB \
+    || (echo "MPM Installation Failure. See below for more information:" && cat /tmp/mathworks_root.log && false) \
+    && rm -f mpm /tmp/mathworks_root.log \
+    && ln -s /opt/matlab/bin/matlab /usr/local/bin/matlab
+# Install products specified in matlab-products
+COPY matlab-products.txt /tmp/matlab-products.txt
