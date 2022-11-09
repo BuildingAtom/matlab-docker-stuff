@@ -6,9 +6,14 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 MOUNT_DIR=$SCRIPT_DIR
 STARTING_DIR=$SCRIPT_DIR
 NAME="adamli-matlab"
-IMAGE="mathworks/matlab:r2022b"
+USE_UNIQUE=true
+#IMAGE="mathworks/matlab:r2022b"
+IMAGE="roahm/matlab-all:r2022b"
 if [ -z "$MLM_LICENSE_FILE" ];then
     MLM_LICENSE_FILE=`cat license-server.txt`
+fi
+if $USE_UNIQUE;then
+    NAME+="-$(cat /proc/sys/kernel/random/uuid)"
 fi
 
 ## Setup uid requirements and workdir for temporaries
@@ -64,6 +69,11 @@ DOCKER_OPTIONS+="-e XAUTHORITY=/tmp/docker.xauth "
 DOCKER_OPTIONS+="-e SDL_VIDEODRIVER=x11 "
 # for generic graphics acceleration. comment out if having issues
 DOCKER_OPTIONS+="--device=/dev/dri:/dev/dri "
+# May need the following if using iris graphics on some systems
+# Ideally, it shouldn't be used.
+# Ubuntu 22.04 based image will not work with iris graphics
+# Ubuntu 20.04 based image will work, but in compatability mode
+DOCKER_OPTIONS+="-e MESA_LOADER_DRIVER_OVERRIDE=i965 "
 
 ## PROJECT
 DOCKER_OPTIONS+="-v $MATLAB_PREF:$MATLAB_PREF "
@@ -71,13 +81,16 @@ DOCKER_OPTIONS+="-v $MOUNT_DIR:$MOUNT_DIR "
 DOCKER_OPTIONS+="-v $DOCKER_HOME:$HOME "
 DOCKER_OPTIONS+="-e MLM_LICENSE_FILE=$MLM_LICENSE_FILE "
 DOCKER_OPTIONS+="--name $NAME "
-DOCKER_OPTIONS+="--entrypoint matlab"
+#DOCKER_OPTIONS+="--entrypoint bash "
+DOCKER_OPTIONS+="--entrypoint matlab "
+#DOCKER_OPTIONS+="--net=host "
 # For Nvidia compute and acceleration. Comment out if having issues.
 #DOCKER_OPTIONS+="--gpus=all,$CAPABILITIES_STR "
 
 
 ## RUN
 docker run $DOCKER_OPTIONS $IMAGE -sd $STARTING_DIR
+#docker run $DOCKER_OPTIONS $IMAGE
 
 ## CLEANUP
 rm -rf $DOCKER_HOME

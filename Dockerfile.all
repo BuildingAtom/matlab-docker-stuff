@@ -1,35 +1,29 @@
+ARG MATLAB_RELEASE=r2022b
+ARG BASE_IMAGE=roahm/matlab-base
+
 # Base MATLAB image, extended from the matlab-ref-arch group
-FROM ubuntu:22.04
+FROM $BASE_IMAGE:$MATLAB_RELEASE
+ARG MATLAB_RELEASE
 
-# Install the apt dependencies
-ENV DEBIAN_FROTNEND="noninteractive" TZ="Etc/UTC"
-COPY apt-dependencies.txt apt-dependencies.txt
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y `grep -ve \# apt-dependencies.txt | xargs` \
-    && apt-get clean \
-    && apt-get -y autoremove \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf apt-dependencies.txt
-
-#RUN [ -d /usr/share/X11/xkb ] || mkdir -p /usr/share/X11/xkb
-
+USER 0
 # Run mpm to install MATLAB in the target location and delete the mpm installation afterwards.
 # If mpm fails to install successfully then output the logfile to the terminal, otherwise cleanup.
-ARG MATLAB_RELEASE=r2022b
+# Install products specified in matlab-products
+COPY matlab-products.txt matlab-products.txt
 RUN wget -q https://www.mathworks.com/mpm/glnxa64/mpm \
     && chmod +x mpm \
     && ./mpm install \
     --release=${MATLAB_RELEASE} \
     --destination=/opt/matlab \
-    --products MATLAB \
+    --doc \
+    --products `grep -ve \# matlab-products.txt | xargs` \
     || (echo "MPM Installation Failure. See below for more information:" && cat /tmp/mathworks_root.log && false) \
     && rm -f mpm /tmp/mathworks_root.log \
-    && ln -s /opt/matlab/bin/matlab /usr/local/bin/matlab
+    && ln -s /opt/matlab/bin/matlab /usr/local/bin/matlab \
+    && rm -f matlab-products mpm
 
 ARG LICENSE_SERVER
 ENV MLM_LICENSE_FILE=$LICENSE_SERVER
-# Install products specified in matlab-products
-#COPY matlab-products.txt /tmp/matlab-products.txt
 
 # Some fonts, but not needed
 #RUN sudo apt-get update \
