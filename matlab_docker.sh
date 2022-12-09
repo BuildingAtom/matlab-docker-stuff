@@ -27,7 +27,7 @@ WORKDIR=$HOME/.docker
 mkdir -p $WORKDIR
 getent passwd $(id -u) > $WORKDIR/.$ID.passwd
 getent group $(id -g) > $WORKDIR/.$ID.group
-DOCKER_HOME=$WORKDIR/$NAME/home
+DOCKER_HOME=$WORKDIR/$NAME
 mkdir -p $DOCKER_HOME
 
 ## Prep for GUI
