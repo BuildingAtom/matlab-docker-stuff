@@ -25,10 +25,25 @@ RUN wget -q https://www.mathworks.com/mpm/glnxa64/mpm \
 ARG LICENSE_SERVER
 ENV MLM_LICENSE_FILE=$LICENSE_SERVER
 
+# Add compiler requirements
+RUN apt-get update \
+    && apt-get -yy install g++ libeigen3-dev libboost-dev \
+    && apt-get clean \
+    && apt-get -y autoremove \
+    && rm -rf /var/lib/apt/lists/*
+
+
 # Some fonts, but not needed
-#RUN sudo apt-get update \
-#    && sudo apt-get install --no-install-recommends -y fonts-liberation fonts-freefont-ttf fonts-opensymbol \
-#    && sudo fc-cache -f -v
-#    && apt-get clean \
-#    && apt-get -y autoremove \
-#    && rm -rf /var/lib/apt/lists/*
+# RUN sudo apt-get update \
+#     && sudo apt-get install --no-install-recommends -y fonts-liberation fonts-freefont-ttf fonts-opensymbol \
+#     && sudo fc-cache -f -v
+#     && apt-get clean \
+#     && apt-get -y autoremove \
+#     && rm -rf /var/lib/apt/lists/*
+
+# Add firefox if wanted for any reason
+# RUN apt-get update \
+#     && apt-get install --no-install-recommends -y firefox \
+#     && apt-get clean \
+#     && apt-get -y autoremove \
+#     && rm -rf /var/lib/apt/lists/*

@@ -5,8 +5,9 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 MOUNT_DIR=$SCRIPT_DIR
 STARTING_DIR=$SCRIPT_DIR
-NAME="adamli-matlab"
+NAME="matlab"
 USE_UNIQUE=true
+ADD_UNAME=true
 #IMAGE="mathworks/matlab:r2022b"
 IMAGE="roahm/matlab-all:r2022b"
 if [ -z "$MLM_LICENSE_FILE" ];then
@@ -14,6 +15,9 @@ if [ -z "$MLM_LICENSE_FILE" ];then
 fi
 if $USE_UNIQUE;then
     NAME+="-$(cat /proc/sys/kernel/random/uuid)"
+fi
+if $ADD_UNAME;then
+    NAME="$(id -un)-$NAME"
 fi
 
 ## Setup uid requirements and workdir for temporaries
@@ -27,7 +31,7 @@ WORKDIR=$HOME/.docker
 mkdir -p $WORKDIR
 getent passwd $(id -u) > $WORKDIR/.$ID.passwd
 getent group $(id -g) > $WORKDIR/.$ID.group
-DOCKER_HOME=$WORKDIR/$NAME/home
+DOCKER_HOME=$WORKDIR/$NAME
 mkdir -p $DOCKER_HOME
 
 ## Prep for GUI
@@ -83,7 +87,7 @@ DOCKER_OPTIONS+="-e MLM_LICENSE_FILE=$MLM_LICENSE_FILE "
 DOCKER_OPTIONS+="--name $NAME "
 #DOCKER_OPTIONS+="--entrypoint bash "
 DOCKER_OPTIONS+="--entrypoint matlab "
-#DOCKER_OPTIONS+="--net=host "
+DOCKER_OPTIONS+="--net=host "
 # For Nvidia compute and acceleration. Comment out if having issues.
 #DOCKER_OPTIONS+="--gpus=all,$CAPABILITIES_STR "
 
