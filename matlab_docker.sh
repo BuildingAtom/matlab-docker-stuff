@@ -27,12 +27,10 @@ fi
 if [ -z "$ID" ];then
     ID=$(id -u)
 fi
-WORKDIR=$HOME/.docker
-mkdir -p $WORKDIR
-getent passwd $(id -u) > $WORKDIR/.$ID.passwd
-getent group $(id -g) > $WORKDIR/.$ID.group
-DOCKER_HOME=$WORKDIR/$NAME
-mkdir -p $DOCKER_HOME
+WORKDIR="$HOME/.docker"
+mkdir -p "$WORKDIR"
+getent passwd $(id -u) > "$WORKDIR/.$ID.passwd"
+getent group $(id --groups) > "$WORKDIR/.$ID.group"
 
 ## Prep for GUI
 XSOCK=/tmp/.X11-unix
@@ -62,6 +60,7 @@ DOCKER_OPTIONS+="--shm-size=512M "
 ## USER ACCOUNT STUFF
 DOCKER_OPTIONS+="--user $(id -u):$(id -g) "
 DOCKER_OPTIONS+="$(id --groups | sed 's/\(\b\w\)/--group-add \1/g') "
+# extrausers trick doesn't work here'
 DOCKER_OPTIONS+="-v $WORKDIR/.$ID.passwd:/etc/passwd:ro "
 DOCKER_OPTIONS+="-v $WORKDIR/.$ID.group:/etc/group:ro "
 
@@ -80,13 +79,18 @@ DOCKER_OPTIONS+="--device=/dev/dri:/dev/dri "
 DOCKER_OPTIONS+="-e MESA_LOADER_DRIVER_OVERRIDE=i965 "
 
 ## PROJECT
+DOCKER_OPTIONS+="--mount type=tmpfs,destination=$HOME,tmpfs-mode=1777 "
 DOCKER_OPTIONS+="-v $MATLAB_PREF:$MATLAB_PREF "
 DOCKER_OPTIONS+="-v $MOUNT_DIR:$MOUNT_DIR "
-DOCKER_OPTIONS+="-v $DOCKER_HOME:$HOME "
-DOCKER_OPTIONS+="-e MLM_LICENSE_FILE=$MLM_LICENSE_FILE "
+#DOCKER_OPTIONS+="-v $DOCKER_HOME:$HOME "
+if [[ ! -z "$MLM_LICENSE_FILE" ]];then
+    DOCKER_OPTIONS+="-e MLM_LICENSE_FILE=$MLM_LICENSE_FILE "
+fi
 DOCKER_OPTIONS+="--name $NAME "
 #DOCKER_OPTIONS+="--entrypoint bash "
-DOCKER_OPTIONS+="--entrypoint matlab "
+#DOCKER_OPTIONS+="--entrypoint matlab "
+# Setting the workdir crashes matlab??
+#DOCKER_OPTIONS+="--workdir=$MOUNT_DIR "
 DOCKER_OPTIONS+="--net=host "
 # For Nvidia compute and acceleration. Comment out if having issues.
 #DOCKER_OPTIONS+="--gpus=all,$CAPABILITIES_STR "
@@ -96,6 +100,4 @@ DOCKER_OPTIONS+="--net=host "
 docker run $DOCKER_OPTIONS $IMAGE -sd $STARTING_DIR
 #docker run $DOCKER_OPTIONS $IMAGE
 
-## CLEANUP
-rm -rf $DOCKER_HOME
 

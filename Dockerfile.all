@@ -47,3 +47,26 @@ RUN apt-get update \
 #     && apt-get clean \
 #     && apt-get -y autoremove \
 #     && rm -rf /var/lib/apt/lists/*
+
+# Add firefox if wanted for any reason
+# RUN apt-get update \
+#     && apt-get install --no-install-recommends -y firefox \
+#     && apt-get clean \
+#     && apt-get -y autoremove \
+#     && rm -rf /var/lib/apt/lists/*
+
+# Install extrausers for adding our user on the fly
+# Doesn't work for matlab for some reason
+# RUN apt-get update \
+#     && apt-get install --no-install-recommends -y apt-utils libnss-extrausers \
+#     && apt-get clean \
+#     && apt-get -y autoremove \
+#     && rm -rf /var/lib/apt/lists/* \
+#     && sed -i '/^passwd:/ s/$/ extrausers/' /etc/nsswitch.conf \
+#     && sed -i '/^group:/ s/$/ extrausers/' /etc/nsswitch.conf
+
+# Add special entrypoint to remove MLM_LICENSE_FILE if not set
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
