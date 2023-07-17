@@ -29,23 +29,24 @@ fi
 
 
 # Create an all image
-OPTIONS=""
-OPTIONS+="--network host "
-OPTIONS+="-t roahm/matlab-all:$tag "
-OPTIONS+="-t roahm/matlab-all:$ver "
-OPTIONS+="--build-arg MATLAB_RELEASE=$ver "
-#OPTIONS+="--build-arg BASE_IMAGE=roahm/matlab-base "
-OPTIONS+="--build-arg BASE_IMAGE=mathworks/matlab-deps "
-if [ -z "$MLM_LICENSE_FILE" ];then
-    MLM_LICENSE_FILE=`cat license-server.txt`
-fi
-if [[ ! -z "$MLM_LICENSE_FILE" ]];then
-    OPTIONS+="--build-arg LICENSE_SERVER=$MLM_LICENSE_FILE "
-fi
-OPTIONS+="-f Dockerfile.all "
-echo $OPTIONS
+# Don't do this on the pinocchio build
+# OPTIONS=""
+# OPTIONS+="--network host "
+# OPTIONS+="-t roahm/matlab-all:$tag "
+# OPTIONS+="-t roahm/matlab-all:$ver "
+# OPTIONS+="--build-arg MATLAB_RELEASE=$ver "
+# #OPTIONS+="--build-arg BASE_IMAGE=roahm/matlab-base "
+# OPTIONS+="--build-arg BASE_IMAGE=mathworks/matlab-deps "
+# if [ -z "$MLM_LICENSE_FILE" ];then
+#     MLM_LICENSE_FILE=`cat license-server.txt`
+# fi
+# if [[ ! -z "$MLM_LICENSE_FILE" ]];then
+#     OPTIONS+="--build-arg LICENSE_SERVER=$MLM_LICENSE_FILE "
+# fi
+# OPTIONS+="-f Dockerfile.all "
+# echo $OPTIONS
 
-docker build $OPTIONS .
+# docker build $OPTIONS .
 
 
 # Create the pinnochio image
