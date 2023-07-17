@@ -45,3 +45,23 @@ OPTIONS+="-f Dockerfile.all "
 echo $OPTIONS
 
 docker build $OPTIONS .
+
+
+# Create the pinnochio image
+OPTIONS=""
+OPTIONS+="--network host "
+OPTIONS+="-t roahm/matlab-pinocchio:$tag "
+OPTIONS+="-t roahm/matlab-pinocchio:$ver "
+OPTIONS+="--build-arg MATLAB_RELEASE=$ver "
+#OPTIONS+="--build-arg BASE_IMAGE=roahm/matlab-base "
+OPTIONS+="--build-arg BASE_IMAGE=roahm/matlab-all "
+if [ -z "$MLM_LICENSE_FILE" ];then
+    MLM_LICENSE_FILE=`cat license-server.txt`
+fi
+if [[ ! -z "$MLM_LICENSE_FILE" ]];then
+    OPTIONS+="--build-arg LICENSE_SERVER=$MLM_LICENSE_FILE "
+fi
+OPTIONS+="-f Dockerfile.pinocchio "
+echo $OPTIONS
+
+docker build $OPTIONS .
