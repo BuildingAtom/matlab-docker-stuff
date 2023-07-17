@@ -9,22 +9,23 @@ if [ $# -eq 0 ]
     ver=$tag
 fi
 
-OPTIONS=""
-OPTIONS+="--network host "
-OPTIONS+="-t roahm/matlab-base:$tag "
-OPTIONS+="-t roahm/matlab-base:$ver "
-OPTIONS+="--build-arg MATLAB_RELEASE=$ver "
-if [ -z "$MLM_LICENSE_FILE" ];then
-    MLM_LICENSE_FILE=`cat license-server.txt`
-fi
-if [[ ! -z "$MLM_LICENSE_FILE" ]];then
-    OPTIONS+="--build-arg LICENSE_SERVER=$MLM_LICENSE_FILE "
-fi
-OPTIONS+="-f Dockerfile.base "
-echo $OPTIONS
+# We don't use the base image here for now
+# OPTIONS=""
+# OPTIONS+="--network host "
+# OPTIONS+="-t roahm/matlab-base:$tag "
+# OPTIONS+="-t roahm/matlab-base:$ver "
+# OPTIONS+="--build-arg MATLAB_RELEASE=$ver "
+# if [ -z "$MLM_LICENSE_FILE" ];then
+#     MLM_LICENSE_FILE=`cat license-server.txt`
+# fi
+# if [[ ! -z "$MLM_LICENSE_FILE" ]];then
+#     OPTIONS+="--build-arg LICENSE_SERVER=$MLM_LICENSE_FILE "
+# fi
+# OPTIONS+="-f Dockerfile.base "
+# echo $OPTIONS
 
-# Create the base image
-docker build $OPTIONS .
+# # Create the base image
+# docker build $OPTIONS .
 
 
 # Create an all image
