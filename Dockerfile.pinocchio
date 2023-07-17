@@ -6,11 +6,13 @@ FROM $BASE_IMAGE:$MATLAB_RELEASE
 ARG MATLAB_RELEASE
 
 # Add urdfdom
+COPY apt-dependencies-pinocchio.txt apt-dependencies-pinocchio.txt
 RUN apt-get update \
-    && apt-get -yy install liburdfdom-dev git build-essential cmake libboost-serialization-dev libboost-filesystem-dev libboost-system-dev libboost-test-dev \
+    && apt-get install --no-install-recommends -y `grep -ve \# apt-dependencies-pinocchio.txt | xargs` \
     && apt-get clean \
     && apt-get -y autoremove \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf apt-dependencies-pinocchio.txt
 
 # Add pinocchio
 RUN mkdir /pinocchio && cd /pinocchio \
@@ -22,6 +24,9 @@ RUN cd /pinocchio/build \
     && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local  -DBUILD_PYTHON_INTERFACE=OFF \
     && make -j8 \
     && make install
+
+# Add eigen3 build compatibility because of hardcoded values
+RUN ln -s /usr/include/eigen3 /usr/local/include/eigen3
 
 # Update Environment Variables
 ENV PATH=/usr/local/bin:$PATH

@@ -9,7 +9,7 @@ NAME="matlab"
 USE_UNIQUE=true
 ADD_UNAME=true
 #IMAGE="mathworks/matlab:r2022b"
-IMAGE="roahm/matlab-all:r2022b"
+IMAGE="roahm/matlab-pinocchio:r2022b"
 if [ -z "$MLM_LICENSE_FILE" ];then
     MLM_LICENSE_FILE=`cat license-server.txt`
 fi
