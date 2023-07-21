@@ -34,7 +34,7 @@ getent group $(id --groups) > "$WORKDIR/.$ID.group"
 
 ## Prep for GUI
 XSOCK=/tmp/.X11-unix
-XAUTH=$WORKDIR/.$ID.docker.xauth
+XAUTH="$WORKDIR/.$ID.docker.xauth"
 xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
 
 ## GPU Capabilities
@@ -47,9 +47,11 @@ CAPABILITIES+=",video"
 # Combine
 CAPABILITIES_STR=\""capabilities=$CAPABILITIES\""
 
-## For MATLAB Preferences
-MATLAB_PREF=$HOME/.matlab
+## For MATLAB Preferences and Add-Ons
+MATLAB_PREF="$HOME/.matlab"
+MATLAB_ADDONS="$MATLAB_PREF/addons"
 mkdir -p $MATLAB_PREF
+mkdir -p $MATLAB_ADDONS
 
 ## Build out the Docker options
 DOCKER_OPTIONS=""
@@ -61,13 +63,13 @@ DOCKER_OPTIONS+="--shm-size=512M "
 DOCKER_OPTIONS+="--user $(id -u):$(id -g) "
 DOCKER_OPTIONS+="$(id --groups | sed 's/\(\b\w\)/--group-add \1/g') "
 # extrausers trick doesn't work here'
-DOCKER_OPTIONS+="-v $WORKDIR/.$ID.passwd:/etc/passwd:ro "
-DOCKER_OPTIONS+="-v $WORKDIR/.$ID.group:/etc/group:ro "
+DOCKER_OPTIONS+="-v \"$WORKDIR/.$ID.passwd\":/etc/passwd:ro "
+DOCKER_OPTIONS+="-v \"$WORKDIR/.$ID.group\":/etc/group:ro "
 
 ## GUI STUFF
 DOCKER_OPTIONS+="-e DISPLAY=$DISPLAY "
 DOCKER_OPTIONS+="-v $XSOCK:$XSOCK "
-DOCKER_OPTIONS+="-v $XAUTH:/tmp/docker.xauth "
+DOCKER_OPTIONS+="-v \"$XAUTH\":/tmp/docker.xauth "
 DOCKER_OPTIONS+="-e XAUTHORITY=/tmp/docker.xauth "
 DOCKER_OPTIONS+="-e SDL_VIDEODRIVER=x11 "
 # for generic graphics acceleration. comment out if having issues
@@ -79,9 +81,10 @@ DOCKER_OPTIONS+="--device=/dev/dri:/dev/dri "
 DOCKER_OPTIONS+="-e MESA_LOADER_DRIVER_OVERRIDE=i965 "
 
 ## PROJECT
-DOCKER_OPTIONS+="--mount type=tmpfs,destination=$HOME,tmpfs-mode=1777 "
-DOCKER_OPTIONS+="-v $MATLAB_PREF:$MATLAB_PREF "
-DOCKER_OPTIONS+="-v $MOUNT_DIR:$MOUNT_DIR "
+DOCKER_OPTIONS+="--mount type=tmpfs,destination=\"$HOME\",tmpfs-mode=1777 "
+DOCKER_OPTIONS+="-v \"$MATLAB_PREF\":\"$HOME/.matlab\" "
+DOCKER_OPTIONS+="-v \"$MATLAB_ADDONS\":\"$HOME/MATLAB Add-Ons\" "
+DOCKER_OPTIONS+="-v \"$MOUNT_DIR\":\"$MOUNT_DIR\" "
 #DOCKER_OPTIONS+="-v $DOCKER_HOME:$HOME "
 if [[ ! -z "$MLM_LICENSE_FILE" ]];then
     DOCKER_OPTIONS+="-e MLM_LICENSE_FILE=$MLM_LICENSE_FILE "
@@ -95,9 +98,9 @@ DOCKER_OPTIONS+="--net=host "
 # For Nvidia compute and acceleration. Comment out if having issues.
 #DOCKER_OPTIONS+="--gpus=all,$CAPABILITIES_STR "
 
-
 ## RUN
-docker run $DOCKER_OPTIONS $IMAGE -sd $STARTING_DIR
+cmd="docker run $DOCKER_OPTIONS $IMAGE -sd $STARTING_DIR"
+eval $cmd
 #docker run $DOCKER_OPTIONS $IMAGE
 
 
