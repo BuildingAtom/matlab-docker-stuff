@@ -16,8 +16,7 @@ RUN apt-get update \
 
 # Add pinocchio
 RUN mkdir /pinocchio && cd /pinocchio \
-    && git clone --recursive https://github.com/stack-of-tasks/pinocchio .\
-    && git checkout master \
+    && git clone --depth=1 --recursive --branch v2.6.20 https://github.com/stack-of-tasks/pinocchio .\
     && mkdir build
 
 RUN cd /pinocchio/build \
